@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model city {
+  id                                 Int       @id
+  name                               String
+  country_code                       String    @db.Char(3)
+  district                           String
+  population                         Int
+  local_name                         String?
+  country_city_country_codeTocountry country   @relation("city_country_codeTocountry", fields: [country_code], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "country_fk")
+  country_country_capitalTocity      country[] @relation("country_capitalTocity")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model country {
+  code                            String             @id @db.Char(3)
+  name                            String
+  continent                       String
+  region                          String
+  surface_area                    Float              @db.Real
+  indep_year                      Int?               @db.SmallInt
+  population                      Int
+  life_expectancy                 Float?             @db.Real
+  gnp                             Decimal?           @db.Decimal(10, 2)
+  gnp_old                         Decimal?           @db.Decimal(10, 2)
+  local_name                      String
+  government_form                 String
+  head_of_state                   String?
+  capital                         Int?
+  code2                           String             @db.Char(2)
+  city_city_country_codeTocountry city[]             @relation("city_country_codeTocountry")
+  city_country_capitalTocity      city?              @relation("country_capitalTocity", fields: [capital], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  country_language                country_language[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model country_flag {
+  code2   String  @id @db.Char(2)
+  emoji   String
+  unicode String?
+}
+
+model country_language {
+  country_code String  @db.Char(3)
+  language     String
+  is_official  Boolean
+  percentage   Float   @db.Real
+  country      country @relation(fields: [country_code], references: [code], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([country_code, language])
+}
